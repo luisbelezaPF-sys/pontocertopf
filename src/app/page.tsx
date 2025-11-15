@@ -54,24 +54,26 @@ export default function Home() {
     const total = getTotal()
 
     // Salvar no Supabase
-    const { data, error } = await supabase
-      .from('orders')
-      .insert([
-        {
-          customer_name: customerName,
-          customer_phone: customerPhone,
-          customer_address: customerAddress,
-          items: cart,
-          total: total,
-          status: 'pending'
-        }
-      ])
-      .select()
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .insert([
+          {
+            customer_name: customerName,
+            customer_phone: customerPhone,
+            customer_address: customerAddress,
+            items: cart,
+            total: total,
+            status: 'pending'
+          }
+        ])
+        .select()
 
-    if (error) {
-      console.error('Erro ao salvar pedido:', error)
-      alert('Erro ao processar pedido. Tente novamente.')
-      return
+      if (error) {
+        console.error('Erro ao salvar pedido:', error)
+      }
+    } catch (err) {
+      console.error('Erro ao processar pedido:', err)
     }
 
     // Montar mensagem WhatsApp (sem emojis, texto limpo)
@@ -89,22 +91,37 @@ export default function Home() {
     message += `Forma de pagamento:\n`
     message += `Observacoes:`
 
-    // Normalizar número: remover espaços, parênteses, hífens
-    const whatsappNumber = '5535910015149'.replace(/[\s\(\)\-]/g, '')
+    // Número do WhatsApp (formato internacional sem símbolos)
+    const whatsappNumber = '5535910015149'
     
-    // Usar API oficial do WhatsApp
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}`
+    // Codificar a mensagem para URL
+    const encodedMessage = encodeURIComponent(message)
     
-    // Abrir em nova aba
-    window.open(whatsappUrl, '_blank')
+    // Montar URL do WhatsApp
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`
     
-    // Limpar carrinho
-    setCart([])
-    setCustomerName('')
-    setCustomerPhone('')
-    setCustomerAddress('')
-    setShowCheckout(false)
-    setShowCart(false)
+    console.log('Abrindo WhatsApp com URL:', whatsappUrl)
+    
+    // Abrir WhatsApp em nova aba
+    const newWindow = window.open(whatsappUrl, '_blank')
+    
+    // Verificar se a janela foi aberta com sucesso
+    if (newWindow) {
+      newWindow.focus()
+    } else {
+      // Fallback: tentar com location.href se popup foi bloqueado
+      window.location.href = whatsappUrl
+    }
+    
+    // Limpar carrinho após 1 segundo (dar tempo para abrir o WhatsApp)
+    setTimeout(() => {
+      setCart([])
+      setCustomerName('')
+      setCustomerPhone('')
+      setCustomerAddress('')
+      setShowCheckout(false)
+      setShowCart(false)
+    }, 1000)
   }
 
   const filteredMenu = menuData.filter(item => item.category === selectedCategory)

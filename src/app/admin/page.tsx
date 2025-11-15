@@ -5,6 +5,9 @@ import { supabase } from '@/lib/supabase'
 import { Order } from '@/lib/types'
 import { LogOut, Printer, CheckCircle, Clock, TrendingUp } from 'lucide-react'
 
+// Forçar renderização dinâmica (não prerender)
+export const dynamic = 'force-dynamic'
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [username, setUsername] = useState('')
@@ -22,6 +25,11 @@ export default function AdminPage() {
   }, [isAuthenticated])
 
   const handleLogin = async () => {
+    if (!supabase) {
+      alert('Supabase não configurado. Configure as variáveis de ambiente.')
+      return
+    }
+
     setLoading(true)
     const { data, error } = await supabase
       .from('admins')
@@ -40,6 +48,8 @@ export default function AdminPage() {
   }
 
   const loadOrders = async () => {
+    if (!supabase) return
+
     const { data, error } = await supabase
       .from('orders')
       .select('*')
@@ -51,6 +61,8 @@ export default function AdminPage() {
   }
 
   const updateOrderStatus = async (orderId: number, status: string) => {
+    if (!supabase) return
+
     const { error } = await supabase
       .from('orders')
       .update({ status })

@@ -74,7 +74,7 @@ export default function Home() {
       return
     }
 
-    // Montar mensagem WhatsApp
+    // Montar mensagem WhatsApp (sem emojis, texto limpo)
     let message = `Pedido - Ponto Certo\n\n`
     message += `Cliente: ${customerName}\n`
     message += `Telefone: ${customerPhone}\n`
@@ -89,9 +89,13 @@ export default function Home() {
     message += `Forma de pagamento:\n`
     message += `Observacoes:`
 
-    const whatsappNumber = '5535910015149'
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`
+    // Normalizar número: remover espaços, parênteses, hífens
+    const whatsappNumber = '5535910015149'.replace(/[\s\(\)\-]/g, '')
     
+    // Usar API oficial do WhatsApp
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}`
+    
+    // Abrir em nova aba
     window.open(whatsappUrl, '_blank')
     
     // Limpar carrinho
